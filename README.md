@@ -13,10 +13,17 @@ Installation
 pip install git+https://github.com/erkkar/tms4-data-reader
 ```
 
+Alternatively, download the repository as ZIP archive and run
+
+``` 
+pip install tms4-data-reader-main.zip
+``` 
+
+
 Usage
 -----
 
-Set up a reader for 
+Set up a reader to a directory
 
     >>> from tms4_data_reader import TMSDataReader
     >>> reader = TMSDataReader('data/')
