@@ -4,8 +4,6 @@ TMS-4 Data Reader
 The class `TMSDataReader` can be used to parse data produced by the 
 [TOMST Lolly software](https://tomst.com/web/en/systems/tms/software/).
 
-The reading function `TMSDataReader.read()`
-
 Installation
 ------------
 
