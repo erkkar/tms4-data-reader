@@ -50,4 +50,11 @@ Read the data as a pandas `DataFrame`:
               4               11.1875  8.0000  6.1875
               5               11.1250  8.0625  6.3750
 
+Tests
+-----
 
+Run tests with
+
+```
+python -m doctest -v README.md
+```
