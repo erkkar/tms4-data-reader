@@ -48,7 +48,7 @@ class TMSDataReader:
         return set(all_loggers).difference(self.loggers)
 
     @staticmethod
-    def _read_file(filepath: Path) -> pd.DataFrame:
+    def _read_file(filepath: Path) -> pd.DataFrame | None:
 
         try:
             df = pd.read_csv(
@@ -67,7 +67,7 @@ class TMSDataReader:
                     "shake",
                     "errFlag",
                 ],
-            )
+            ).set_index("measurement_id")
             # Parse timestamps
             df["timestamp"] = pd.to_datetime(
                 # Replace dots as time separators with colons,
@@ -92,19 +92,13 @@ class TMSDataReader:
         except AttributeError:
             pass  # values are already floats
 
-        # Parse logger id from the file name
-        df["logger_id"] = TMSDataReader._get_logger_id(filepath)
-
         # Add file modification time
         df["read_time"] = datetime.datetime.fromtimestamp(
             os.path.getmtime(filepath),
         )
 
-        # Find duplicated timestamps
-        duplicates = df.duplicated("timestamp", keep="first")
-
-        # Return data with duplicates removed
-        return df.loc[~duplicates].set_index(["timestamp", "logger_id"]).sort_index()
+        # Return data with duplicated rows removed
+        return df.drop_duplicates(keep="last")
 
     @staticmethod
     def _get_logger_id(filepath):
@@ -113,12 +107,14 @@ class TMSDataReader:
     def read(self) -> pd.DataFrame:
         """Read data files into a Data Frame
 
-        Duplicated timestamps are removed automatically leaving the first record.
+        Duplicated rows (timestamp and data) are removed automatically
+        leaving the last record.
         """
         return pd.concat(
-            (
-                self._read_file(filepath)
+            {
+                self._get_logger_id(filepath): self._read_file(filepath)
                 for filepath in self.data_dir.glob(self._filepattern)
-            ),
+            },
+            names=["logger_id"],
             axis=0,
-        ).sort_index()
+        )
