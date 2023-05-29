@@ -11,6 +11,9 @@ import dateutil
 import pandas as pd
 
 
+EMPTY_FILE_STRING = "File is empty"
+
+
 class TMSDataReader:
     """Class for reading data files produced by the TOMST Lolly software
 
@@ -49,40 +52,50 @@ class TMSDataReader:
 
     @staticmethod
     def _read_file(filepath: Path) -> pd.DataFrame | None:
-
-        try:
-            df = pd.read_csv(
-                filepath,
-                index_col=False,
-                sep=";",
-                header=None,
-                names=[  # File format: https://tomst.com/web/en/systems/tms/software/
-                    "measurement_id",
-                    "timestamp",
-                    "time zone",
-                    "T1",
-                    "T2",
-                    "T3",
-                    "soilmoist_count",
-                    "shake",
-                    "errFlag",
-                ],
-            ).set_index("measurement_id")
-            # Parse timestamps
-            df["timestamp"] = pd.to_datetime(
-                # Replace dots as time separators with colons,
-                # see: https://github.com/dateutil/dateutil/issues/252
-                df["timestamp"].str.replace(
-                    r"\d{2}.\d{2}$",  # Match only time HH.MM at the end of the string
-                    lambda match: match.group().replace(".", ":"),
-                    regex=True,
-                ),
-                utc=True,
-                infer_datetime_format=True,
-            )
-        except (pd.errors.ParserError, dateutil.parser.ParserError, ValueError) as err:
-            logging.warning("Failed reading file %s: %s", filepath.name, err)
-            return None
+        with open(filepath, encoding="utf8") as fp:
+            try:
+                df = pd.read_csv(
+                    fp,
+                    index_col=False,
+                    sep=";",
+                    header=None,
+                    # File format: https://tomst.com/web/en/systems/tms/software/
+                    names=[
+                        "measurement_id",
+                        "timestamp",
+                        "time zone",
+                        "T1",
+                        "T2",
+                        "T3",
+                        "soilmoist_count",
+                        "shake",
+                        "errFlag",
+                    ],
+                ).set_index("measurement_id")
+                # Parse timestamps
+                df["timestamp"] = pd.to_datetime(
+                    # Replace dots as time separators with colons,
+                    # see: https://github.com/dateutil/dateutil/issues/252
+                    df["timestamp"].str.replace(
+                        # Match only time HH.MM at the end of the string
+                        r"\d{2}.\d{2}$",
+                        lambda match: match.group().replace(".", ":"),
+                        regex=True,
+                    ),
+                    utc=True,
+                    infer_datetime_format=True,
+                )
+            except (
+                pd.errors.ParserError,
+                dateutil.parser.ParserError,
+                ValueError,
+            ) as err:
+                fp.seek(0)
+                if fp.readline().rstrip("\n") == EMPTY_FILE_STRING:
+                    logging.warning("Empty file %s", filepath.name)
+                else:
+                    logging.warning("Failed reading file %s: %s", filepath.name, err)
+                return None
 
         # Parse temperature columns as floats if this failed when reading the file
         try:
