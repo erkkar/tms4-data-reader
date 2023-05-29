@@ -11,6 +11,7 @@ import dateutil
 import pandas as pd
 
 
+DATA_FILE_PATTERN = "data_*_????_??_??_?.csv"
 EMPTY_FILE_STRING = "File is empty"
 
 
@@ -32,7 +33,7 @@ class TMSDataReader:
         self.data_dir = Path(data_dir)
         if not self.data_dir.exists():
             raise FileExistsError(f"Directory '{data_dir}' not found!")
-        self._filepattern = "data_*_????_??_??_?.csv"
+        self._filepattern = DATA_FILE_PATTERN
 
     @property
     def filecount(self):
