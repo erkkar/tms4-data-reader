@@ -80,16 +80,9 @@ class TMSDataReader:
                 ).set_index("measurement_id")
                 # Parse timestamps
                 df["timestamp"] = pd.to_datetime(
-                    # Replace dots as time separators with colons,
-                    # see: https://github.com/dateutil/dateutil/issues/252
-                    df["timestamp"].str.replace(
-                        # Match only time HH.MM at the end of the string
-                        r"\d{2}.\d{2}$",
-                        lambda match: match.group().replace(".", ":"),
-                        regex=True,
-                    ),
+                    df["timestamp"],
                     utc=True,
-                    infer_datetime_format=True,
+                    yearfirst=True,
                 )
             except (
                 pd.errors.ParserError,
