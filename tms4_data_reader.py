@@ -11,6 +11,7 @@ import dateutil
 import numpy as np
 import pandas as pd
 
+logger = logging.getLogger(__name__)
 
 DATA_FILE_PATTERN = "data_*_????_??_??_?.csv"
 EMPTY_FILE_STRING = "File is empty"
@@ -97,9 +98,9 @@ class TMSDataReader:
             ) as err:
                 fp.seek(0)
                 if fp.readline().rstrip("\n") == EMPTY_FILE_STRING:
-                    logging.warning("Empty file %s", filepath.name)
+                    logger.warning("Empty file %s", filepath.name)
                 else:
-                    logging.warning("Failed reading file %s: %s", filepath.name, err)
+                    logger.warning("Failed reading file %s: %s", filepath.name, err)
                 return None
 
         # Parse temperature columns as floats if this failed when reading the file
