@@ -96,18 +96,12 @@ class TMSDataReader:
                     logger.warning("Failed reading file %s: %s", filepath.name, err)
                 return None
 
-        # Parse temperature columns as floats if this failed when reading the file
-        try:
-            df[["T1", "T2", "T3"]] = df[["T1", "T2", "T3"]].apply(
-                lambda ts: ts.str.replace(",", ".").astype(float)
+        # Add file modification time rounded to seconds
+        df["read_time"] = pd.to_datetime(
+            datetime.datetime.fromtimestamp(
+                os.path.getmtime(filepath),
             )
-        except AttributeError:
-            pass  # values are already floats
-
-        # Add file modification time
-        df["read_time"] = datetime.datetime.fromtimestamp(
-            os.path.getmtime(filepath),
-        )
+        ).round("s")
 
         # Return data with duplicated rows removed
         return df.drop_duplicates(keep="last")
