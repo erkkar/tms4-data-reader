@@ -1,18 +1,32 @@
 """Module for reading TOMST TMS-4 logger data"""
 
-from pathlib import Path
+import datetime
+import logging
+import os.path
 import re
 from collections.abc import Iterable
-import logging
-import datetime
-import os.path
+from pathlib import Path
 
 import dateutil
+import numpy as np
 import pandas as pd
 
 
 DATA_FILE_PATTERN = "data_*_????_??_??_?.csv"
 EMPTY_FILE_STRING = "File is empty"
+
+# File format: https://tomst.com/web/en/systems/tms/software/
+DATA_FILE_SCHEMA = {
+    "measurement_id": "uint64",
+    "timestamp": "str",
+    "time zone": "int8",
+    "T1": "float16",
+    "T2": "float16",
+    "T3": "float16",
+    "soilmoist_count": "int16",
+    "shake": "category",
+    "errFlag": "category",
+}
 
 
 class TMSDataReader:
@@ -36,12 +50,12 @@ class TMSDataReader:
         self._filepattern = DATA_FILE_PATTERN
 
     @property
-    def filecount(self):
+    def filecount(self) -> int:
         """Get number of data files in this dataset"""
         return sum(1 for _ in self.data_dir.glob(self._filepattern))
 
     @property
-    def loggers(self) -> set[int]:
+    def loggers(self) -> set[np.uint32]:
         """Get logger id’s contained in this dataset"""
         return set(
             map(TMSDataReader._get_logger_id, self.data_dir.glob(self._filepattern))
@@ -60,18 +74,8 @@ class TMSDataReader:
                     index_col=False,
                     sep=";",
                     header=None,
-                    # File format: https://tomst.com/web/en/systems/tms/software/
-                    names=[
-                        "measurement_id",
-                        "timestamp",
-                        "time zone",
-                        "T1",
-                        "T2",
-                        "T3",
-                        "soilmoist_count",
-                        "shake",
-                        "errFlag",
-                    ],
+                    names=list(DATA_FILE_SCHEMA),
+                    dtype=DATA_FILE_SCHEMA,
                 ).set_index("measurement_id")
                 # Parse timestamps
                 df["timestamp"] = pd.to_datetime(
@@ -115,8 +119,8 @@ class TMSDataReader:
         return df.drop_duplicates(keep="last")
 
     @staticmethod
-    def _get_logger_id(filepath):
-        return int(re.match(r"^data_(\d+)", filepath.stem).group(1))
+    def _get_logger_id(filepath: Path) -> np.uint32:
+        return np.uint32(re.match(r"^data_(\d+)", filepath.stem).group(1))
 
     def read(self) -> pd.DataFrame:
         """Read data files into a Data Frame
