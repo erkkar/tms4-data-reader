@@ -26,9 +26,9 @@ DATA_FILE_SCHEMA = {
     "T1": "float16",
     "T2": "float16",
     "T3": "float16",
-    "soilmoist_count": "int16",
-    "shake": "category",
-    "errFlag": "category",
+    "soilmoist_count": "uint16",
+    "shake": "uint8",
+    "errFlag": "uint8",
 }
 
 
