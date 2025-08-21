@@ -23,9 +23,9 @@ DATA_FILE_SCHEMA = {
     "measurement_id": "uint64",
     "timestamp": "str",  # parsed separately, read as string
     "time zone": "int8",
-    "T1": "float16",
-    "T2": "float16",
-    "T3": "float16",
+    "T1": "float32",
+    "T2": "float32",
+    "T3": "float32",
     "soilmoist_count": "uint16",
     "shake": "uint8",
     "errFlag": "uint8",

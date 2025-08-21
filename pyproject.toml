@@ -1,6 +1,6 @@
 [project]
 name = "tms4_data_reader"
-version = "2.3.0"
+version = "2.3.1"
 authors = [{ name = "Erkka Rinne", email = "erkka.rinne@fmi.fi" }]
 description = "Python module for reading TOMST TMS-4 data"
 requires-python = ">=3.10"
