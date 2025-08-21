@@ -4,10 +4,11 @@ import datetime
 import logging
 import os.path
 import re
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
 
-import dateutil
+import dateutil.parser
 import numpy as np
 import pandas as pd
 
@@ -19,7 +20,7 @@ EMPTY_FILE_STRING = "File is empty"
 # File format: https://tomst.com/web/en/systems/tms/software/
 DATA_FILE_SCHEMA = {
     "measurement_id": "uint64",
-    "timestamp": "str",
+    "timestamp": "str",  # parsed separately, read as string
     "time zone": "int8",
     "T1": "float16",
     "T2": "float16",
@@ -78,15 +79,8 @@ class TMSDataReader:
                     names=list(DATA_FILE_SCHEMA),
                     dtype=DATA_FILE_SCHEMA,  # type: ignore
                 ).set_index("measurement_id")
-                # Parse timestamps
-                df["timestamp"] = pd.to_datetime(
-                    df["timestamp"],
-                    utc=True,
-                    yearfirst=True,
-                )
             except (
                 pd.errors.ParserError,
-                dateutil.parser.ParserError,
                 ValueError,
             ) as err:
                 fp.seek(0)
@@ -95,6 +89,24 @@ class TMSDataReader:
                 else:
                     logger.warning("Failed reading file %s: %s", filepath.name, err)
                 return None
+
+        # Parse timestamps
+        with warnings.catch_warnings():
+            warnings.filterwarnings(message="Could not infer format", action="error")
+            try:
+                df["timestamp"] = pd.to_datetime(
+                    df["timestamp"],
+                    utc=True,
+                    yearfirst=True,
+                )
+            except (
+                dateutil.parser.ParserError,
+                UserWarning,
+            ):
+                # Try Lolly default date time format
+                df["timestamp"] = pd.to_datetime(
+                    df["timestamp"], utc=True, format="%Y/%m/%d %H.%M"
+                )
 
         # Add file modification time rounded to seconds
         df["read_time"] = pd.to_datetime(
