@@ -6,6 +6,7 @@ import os.path
 import re
 import warnings
 from collections.abc import Iterable
+from io import StringIO
 from pathlib import Path
 
 import dateutil.parser
@@ -70,11 +71,16 @@ class TMSDataReader:
     @staticmethod
     def _read_file(filepath: Path) -> pd.DataFrame | None:
         with open(filepath, encoding="utf8") as fp:
+            data = fp.read().replace(
+                ",",
+                ".",  # some files may have comma as decimal separator
+            )
             try:
                 df = pd.read_csv(
-                    fp,
+                    StringIO(data),
                     index_col=False,
                     sep=";",
+                    decimal=".",
                     header=None,
                     names=list(DATA_FILE_SCHEMA),
                     dtype=DATA_FILE_SCHEMA,  # type: ignore
