@@ -1,21 +1,16 @@
 [project]
 name = "tms4_data_reader"
-version = "2.2.0"
-authors = [
-  {name = "Erkka Rinne", email = "erkka.rinne@fmi.fi"},
-]
+version = "2.3.0"
+authors = [{ name = "Erkka Rinne", email = "erkka.rinne@fmi.fi" }]
 description = "Python module for reading TOMST TMS-4 data"
 requires-python = ">=3.10"
 classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Science/Research",
 ]
-dependencies = [
-    "python-dateutil",
-    "pandas",
-]
+dependencies = ["python-dateutil", "pandas"]
 
 [tool.setuptools]
 py-modules = ["tms4_data_reader"]
