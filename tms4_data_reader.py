@@ -76,7 +76,7 @@ class TMSDataReader:
                     sep=";",
                     header=None,
                     names=list(DATA_FILE_SCHEMA),
-                    dtype=DATA_FILE_SCHEMA,
+                    dtype=DATA_FILE_SCHEMA,  # type: ignore
                 ).set_index("measurement_id")
                 # Parse timestamps
                 df["timestamp"] = pd.to_datetime(
@@ -108,7 +108,7 @@ class TMSDataReader:
 
     @staticmethod
     def _get_logger_id(filepath: Path) -> np.uint32:
-        return np.uint32(re.match(r"^data_(\d+)", filepath.stem).group(1))
+        return np.uint32(re.match(r"^data_(\d+)", filepath.stem).group(1))  # type: ignore
 
     def read(self) -> pd.DataFrame:
         """Read data files into a Data Frame
